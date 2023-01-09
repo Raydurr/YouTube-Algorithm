@@ -11,7 +11,7 @@ import pandas as pd
 import time
 
 #Date(DONT USE '/')
-date = '01-04-2023'
+date = '01-06-2023'
 version = 'v1'
 #Create Ublock Extension
 chrome_options = ChromeOptions() 
@@ -31,7 +31,7 @@ ran_for = 0 #How long the program has run(in seconds)
 max_dur = 15*60 #sets max duration of video(in seconds)
 wait = WebDriverWait(driver, 10)
 #Create dataframe
-Scraped_Data = pd.DataFrame([], columns= ['Title', 'Channel', 'Views', 'Likes', 'Duration', "Number of Comments", "Liked?"])
+Scraped_Data = pd.DataFrame([], columns= ['Title', 'Channel', 'Views', 'Likes', 'Duration', "Number of Comments", "Liked?", "Recomended Videos"])
 #Create skip action chain
 skip_action = ActionChains(driver)
 skip_action.send_keys(Keys.SHIFT)
@@ -45,48 +45,32 @@ action.send_keys(Keys.SPACE)
 #signs in 
 def sign_in(input):
     if input == "C":
-        driver.find_element_by_xpath(username_box).send_keys("nickneut22@gmail.com")
-        driver.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
-        password = WebDriverWait(driver, 600).until(EC.element_to_be_clickable((By.XPATH, password_box)))
-        password.send_keys('Npg53qKl2t')
-        driver.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+        username = 'username'
+        password = 'password'
 
     elif input == "R":
-        driver.find_element_by_xpath(username_box).send_keys("catconserve@gmail.com")
-        driver.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
-        password = WebDriverWait(driver, 600).until(EC.element_to_be_clickable((By.XPATH, password_box)))
-        password.send_keys('cT47&^3#RtpQ')
-        driver.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+        username = "username"
+        password = 'password'
 
     elif input == "L":
-        driver.find_element_by_xpath(username_box).send_keys("leftwardlila67@gmail.com")
-        driver.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
-        password = WebDriverWait(driver, 600).until(EC.element_to_be_clickable((By.XPATH, password_box)))
-        password.send_keys('56tdjeo@$%g')
-        driver.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
+        username = "username"
+        password = 'password'
+        
+    driver.find_element_by_xpath(username_box).send_keys(username)
+    driver.find_element_by_xpath('//*[@id="identifierNext"]/div/button').click()
+    WebDriverWait(driver, 600).until(EC.element_to_be_clickable((By.XPATH, password_box))).send_keys(password)
+    driver.find_element_by_xpath('//*[@id="passwordNext"]/div/button').click()
 
 
-
+#Checks if subscribed
 def subscribed():
     if driver.find_element_by_xpath('//*[@id="notification-preference-button"]/ytd-subscription-notification-toggle-button-renderer-next/yt-button-shape/button/div[2]/span').text  == 'Subscribed':
         return True
     else:
         return False
 
-
-def like_video_com(subscribed, likes, comments, views):
-    driver.execute_script("arguments[0].scrollIntoView();",top_title)
-    if subscribed and ((likes + comments + (2 * views / 5)) / views) >= .35:
-        Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
-        Like.click()
-    elif ((likes + comments + (2 * views / 5)) / views) >= .50:
-        Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
-        Like.click()
-    else:
-        return False
-    return True
-    
-def like_video_nocom(subscribed, likes, views):  
+#Decides to like video
+def like_video(subscribed, likes, comments, views):
     driver.execute_script("arguments[0].scrollIntoView();",top_title)
     if subscribed and ((likes + (2 * views / 5)) / views) >= .30:
         Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
@@ -95,8 +79,13 @@ def like_video_nocom(subscribed, likes, views):
         Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
         Like.click()
     else:
-        return False
-    return True
+        if subscribed and ((likes + comments + (2 * views / 5)) / views) >= .35:
+            Like.click()
+        elif ((likes + comments + (2 * views / 5)) / views) >= .50:
+            Like.click()
+        else:
+            return False
+        return True
 
 #convert youtube duration into seconds
 def duration_convert(duration): 
@@ -125,7 +114,31 @@ def likes_convert(likes):
         likes_real = float(likes)
     return likes_real
 
-#gets data
+#gets titles of recommended videos
+def get_rec_titles():
+    titles = driver.find_elements_by_xpath('//*[@id="video-title"]')
+    #convert title elements to text
+    titles_converted = []
+    for title in titles:
+        titles_converted.append(title.text)
+    return titles_converted
+#gets channel names of recommended videos
+def get_rec_channels():
+    rec_channels = driver.find_elements_by_xpath('//*[@id="text"]')
+    #convert channel elements to text
+    channels_converted = []
+    for channel in rec_channels:
+        channels_converted.append(channel.text)
+    return channels_converted
+
+#merges 2 list
+def list_merge(list1, list2):
+    merged = []
+    for i in range(0, len(list1)):
+        merged.append([list1[i],list2[i]])
+    return merged
+
+#gets data of video the bot is currently watching
 def scrape_data():
     global ran_for
     global Scraped_Data
@@ -146,9 +159,8 @@ def scrape_data():
         return
     #Get Views
     wait.until(EC.element_to_be_clickable((By.XPATH, Show_more))).click() #clicks show more
-    try:
-        Views = driver.find_element_by_xpath('//*[@id="info"]/span[1]').text
-    except: #skip movies 
+    Views = driver.find_element_by_xpath('//*[@id="info"]/span[1]').text
+    if Views == '':
         skip_action.perform()
         return
     Views = Views.split(' ')
@@ -163,11 +175,8 @@ def scrape_data():
         ).text
     print("Channel: " + channel)
     #Get Likes
-    try:
-        Likes = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button/div[2]/span').text
-        if Likes == '':
-            skip_action.perform()
-    except: #skip undesirables 
+    Likes = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button/div[2]/span').text
+    if Likes == '':
         skip_action.perform()
         return
     Likes = likes_convert(Likes)
@@ -187,15 +196,20 @@ def scrape_data():
     except: 
         Comments = 'No comments'
     print('Comments: ' + str(Comments))
+    #Get recommended video titles and channel names
+    rec_titles = get_rec_titles()
+    rec_channels = get_rec_channels()
+        #Merges titles and channels together
+    merged_rec_info = list_merge(rec_titles, rec_channels)
     #convert duration to seconds
     sec_dur = duration_convert(duration)
-    #modify max video watch time 
-    if Comments != 'No comments' and Comments != '':
-        mod_dur = max_dur * ( (Likes + Comments + (2 * Views) / 5) / Views)
-        Liked = like_video_com(sub, Likes, Comments, Views) 
-    else: 
+    #modify max video watch time
+    if isinstance(Comments,str):
         mod_dur = max_dur * ((Likes +(2 * Views) / 5) / Views)
-        Liked = like_video_nocom(sub, Likes, Views) 
+    else: 
+        mod_dur = max_dur * ( (Likes + Comments + (2 * Views) / 5) / Views) 
+    #Like video?
+    Liked = like_video(sub, Likes, Comments, Views)
     #check if video is too long/short enough
     if sec_dur <= mod_dur:
         time.sleep(sec_dur)
@@ -206,7 +220,7 @@ def scrape_data():
         ran_for = ran_for + mod_dur #modifies how long its ran for
         skip_action.perform()
     #Edit DataFrame
-    Scraped_Data.loc[len(Scraped_Data)]= [title, channel, Views, Likes, duration, Comments, Liked]
+    Scraped_Data.loc[len(Scraped_Data)]= [title, channel, Views, Likes, duration, Comments, Liked, merged_rec_info]
 
 def first_vid_select():
     input1 = input("Ready? Press Enter ")
@@ -227,6 +241,7 @@ top_title = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="title
 
 while run_for > ran_for:
    scrape_data()
+   print(Scraped_Data)
    Scraped_Data.to_csv(r'C:\Users\Raymond\OneDrive\Desktop\YouTube Stuff\YouTube R Stuff\Scraped Data-' + date + input1 + version  + '.csv' )
 print("Program Ended")
 driver.quit()
