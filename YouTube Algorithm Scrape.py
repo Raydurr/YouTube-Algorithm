@@ -72,12 +72,15 @@ def subscribed():
 #Decides to like video
 def like_video(subscribed, likes, comments, views):
     driver.execute_script("arguments[0].scrollIntoView();",top_title)
-    if subscribed and ((likes + (2 * views / 5)) / views) >= .30:
-        Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
-        Like.click()
-    elif ((likes + (2 * views / 5)) / views) >= .4:
-        Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
-        Like.click()
+    Like = driver.find_element_by_xpath('//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button')
+    if isinstance(comments, str):
+        if subscribed and ((likes + (2 * views / 5)) / views) >= .30:
+            Like.click()
+        elif ((likes + (2 * views / 5)) / views) >= .4:
+            Like.click()
+        else:
+            return False
+        return True
     else:
         if subscribed and ((likes + comments + (2 * views / 5)) / views) >= .35:
             Like.click()
