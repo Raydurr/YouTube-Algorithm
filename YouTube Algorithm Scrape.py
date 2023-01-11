@@ -14,8 +14,8 @@ import time
 date = '01-06-2023'
 version = 'v1'
 #Create Ublock Extension
-chrome_options = ChromeOptions() 
-chrome_options.add_extension(r"C:\Users\Raymond\OneDrive\Documents\Selenium Stuff\Ublock.crx")
+chrome_options = ChromeOptions()
+chrome_options.add_extension(r"../Selenium Stuff/Ublock.crx")
 #Driver
 PATH = 'C:\Program Files (x86)\chromedriver.exe'
 driver = webdriver.Chrome(PATH, options = chrome_options)
