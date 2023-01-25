@@ -15,9 +15,9 @@ date = '01-06-2023'
 version = 'v1'
 #Create Ublock Extension
 chrome_options = ChromeOptions()
-chrome_options.add_extension(r"../Selenium Stuff/Ublock.crx")
+chrome_options.add_extension(r"./Selenium Stuff/Ublock.crx")
 #Driver
-PATH = 'C:\Program Files (x86)\chromedriver.exe'
+PATH = './Selenium Stuff/chromedriver.exe'#'C:\Program Files (x86)\chromedriver.exe'
 driver = webdriver.Chrome(PATH, options = chrome_options)
 driver.get('https://accounts.google.com/ServiceLogin/signinchooser?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en&ec=65620&ifkv=AeAAQh6XAOr5EDoVDF9Iks6MhwzwlCJlhYM2qvC2ppQ4tTq_muU3qD2wBVfNZVRJhGF74PlTynFtAw&flowName=GlifWebSignIn&flowEntry=ServiceLogin')
 driver.get('https://accounts.google.com/ServiceLogin/signinchooser?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Den%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=en&ec=65620&ifkv=AeAAQh6XAOr5EDoVDF9Iks6MhwzwlCJlhYM2qvC2ppQ4tTq_muU3qD2wBVfNZVRJhGF74PlTynFtAw&flowName=GlifWebSignIn&flowEntry=ServiceLogin')
