@@ -11,7 +11,7 @@ import pandas as pd
 import time
 
 #Date(DONT USE '/')
-date = '01-06-2023'
+date = '01-25-2023'
 version = 'v1'
 #Create Ublock Extension
 chrome_options = ChromeOptions()
@@ -36,6 +36,12 @@ Scraped_Data = pd.DataFrame([], columns= ['Title', 'Channel', 'Views', 'Likes', 
 skip_action = ActionChains(driver)
 skip_action.send_keys(Keys.SHIFT)
 skip_action.send_keys('N')
+#Create click video action chain
+def click(web_list):
+    click_vid = ActionChains(driver)
+    click_vid.move_to_element(web_list[1]) #change to weighted random selection 
+    click_vid.click()
+    click_vid.perform()
 #Create pause/unpause action chain(to show duration)
 action = ActionChains(driver)
 action.send_keys(Keys.SPACE)
@@ -119,20 +125,25 @@ def likes_convert(likes):
 
 #gets titles of recommended videos
 def get_rec_titles():
-    titles = driver.find_elements_by_xpath('//*[@id="video-title"]')
-    #convert title elements to text
-    titles_converted = []
-    for title in titles:
-        titles_converted.append(title.text)
-    return titles_converted
+     titles = driver.find_elements_by_xpath('//*[@id="video-title"]')
+     #convert title elements to text
+     titles_converted = []
+     for title in titles:
+         titles_converted.append(title.text)
+     return titles_converted
 #gets channel names of recommended videos
 def get_rec_channels():
-    rec_channels = driver.find_elements_by_xpath('//*[@id="text"]')
-    #convert channel elements to text
-    channels_converted = []
-    for channel in rec_channels:
-        channels_converted.append(channel.text)
-    return channels_converted
+     rec_channels = driver.find_elements_by_xpath('//*[@id="text"]')
+     #convert channel elements to text
+     channels_converted = []
+     for channel in rec_channels:
+         channels_converted.append(channel.text)
+     return channels_converted
+def get_rec_elements():
+    comment_section = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH,'//*[@id="comments"]')))
+    driver.execute_script("arguments[0].scrollIntoView();",comment_section)
+    video_elements = driver.find_elements(By.XPATH, '//*[@id="video-title"]')
+    return video_elements
 
 #merges 2 list
 def list_merge(list1, list2):
@@ -213,15 +224,18 @@ def scrape_data():
         mod_dur = max_dur * ( (Likes + Comments + (2 * Views) / 5) / Views) 
     #Like video?
     Liked = like_video(sub, Likes, Comments, Views)
+
+    #Get rec video web elements to click(as list)
+    web_elements = get_rec_elements()
     #check if video is too long/short enough
     if sec_dur <= mod_dur:
         time.sleep(sec_dur)
         ran_for = ran_for + sec_dur #modifies how long its ran for
-        skip_action.perform()
+        click(web_elements) 
     else: 
         time.sleep(mod_dur)
         ran_for = ran_for + mod_dur #modifies how long its ran for
-        skip_action.perform()
+        click(web_elements)
     #Edit DataFrame
     Scraped_Data.loc[len(Scraped_Data)]= [title, channel, Views, Likes, duration, Comments, Liked, merged_rec_info]
 
