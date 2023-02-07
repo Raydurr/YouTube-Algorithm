@@ -40,7 +40,7 @@ skip_action.send_keys('N')
 def click(web_list):
     click_vid = ActionChains(driver)
     x = np.random.choice(range(0,10), p = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.01, 0.01, 0.05, 0.05])
-    print(x)
+    print('Video index: ' + str(x))
     click_vid.move_to_element(web_list[x]) 
     click_vid.click()
     click_vid.perform()
