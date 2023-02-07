@@ -26,9 +26,9 @@ username_box = '//*[@id="identifierId"]'
 password_box = '//*[@id="password"]/div[1]/div/div[1]/input'
 Show_more = '//*[@id="expand"]'
 #Time Tracking Variables
-run_for = 60*60 #How long program should run for(in seconds)
+run_for = 60 #How long program should run for(in seconds)
 ran_for = 0 #How long the program has run(in seconds)
-max_dur = 15*60 #sets max duration of video(in seconds)
+max_dur = 2 #sets max duration of video(in seconds)
 wait = WebDriverWait(driver, 10)
 #Create dataframe
 Scraped_Data = pd.DataFrame([], columns= ['Title', 'Channel', 'Views', 'Likes', 'Duration', "Number of Comments", "Liked?", "Recomended Videos"])
@@ -39,7 +39,9 @@ skip_action.send_keys('N')
 #Create click video action chain
 def click(web_list):
     click_vid = ActionChains(driver)
-    click_vid.move_to_element(web_list[1]) #change to weighted random selection 
+    x = np.random.choice(range(0,10), p = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.01, 0.01, 0.05, 0.05])
+    print(x)
+    click_vid.move_to_element(web_list[x]) 
     click_vid.click()
     click_vid.perform()
 #Create pause/unpause action chain(to show duration)
@@ -120,7 +122,10 @@ def likes_convert(likes):
         splitted = likes.split("M")
         likes_real = float(splitted[0]) *1000000
     else:
-        likes_real = float(likes)
+        try:
+            likes_real = float(likes)
+        except: #in case no likes are shown
+            likes_real = 0
     return likes_real
 
 #gets titles of recommended videos
@@ -181,7 +186,7 @@ def scrape_data():
     if ',' in Views[0]:
         Views = int(Views[0].replace(',', ''))
     else:
-        Views[0] = int(Views[0])
+        Views = int(Views[0])
     print('Views: ' + str(Views))
     #Get Channel 
     channel = wait.until(
