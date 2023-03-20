@@ -9,9 +9,10 @@ from selenium.common import exceptions
 import numpy as np
 import pandas as pd
 import time
+from datetime import date as dt
 
 #Date(DONT USE '/')
-date = '01-25-2023'
+date = str(dt.today())
 version = 'v1'
 #Create Ublock Extension
 chrome_options = ChromeOptions()
